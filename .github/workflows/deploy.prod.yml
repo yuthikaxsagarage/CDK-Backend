@@ -1,0 +1,65 @@
+name: "Deploying to production environment"
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  aws_cdk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_AKI_CDK }}
+          aws-secret-access-key: ${{ secrets.AWS_AKS_CDK }}
+          aws-region: "us-west-2"
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Install aws-cdk cli
+        run: npm i -g aws-cdk
+
+      - name: Install createCandidateTest deps
+        run: cd lib/stacks/candidateTest/lambdaFns/createCandidateTest && npm i
+
+      - name: Install getCandidateTestData deps
+        run: cd lib/stacks/candidateTest/lambdaFns/getCandidateTestData && npm i
+
+      - name: Install startCandidateTest deps
+        run: cd lib/stacks/candidateTest/lambdaFns/startCandidateTest && npm i
+
+      - name: Install submitCandidateTest deps
+        run: cd lib/stacks/candidateTest/lambdaFns/submitCandidateTest && npm i
+
+      - name: Install createCategory deps
+        run: cd lib/stacks/categoryStack/lambdaFns/createCategory && npm i
+
+      - name: Install createDifficulty deps
+        run: cd lib/stacks/difficultyStack/lambdaFns/createDifficulty && npm i
+
+      - name: Install createIndustry deps
+        run: cd lib/stacks/industryStack/lambdaFns/createIndustry && npm i
+
+      - name: Install createQuestion deps
+        run: cd lib/stacks/questionsStack/lambdaFns/createQuestion && npm i
+
+      - name: Install createQuestionType deps
+        run: cd lib/stacks/questionTypeStack/lambdaFns/createQuestionType && npm i
+
+      - name: Install createTest deps
+        run: cd lib/stacks/skillTestsStack/lambda-fns/createTest && npm i
+
+      - name: Build js
+        run: npm run build
+
+      - name: CDK Synth
+        run: cdk synth SkillsApp-prod
+
+      - name: CDK Deploy
+        run: cdk deploy SkillsApp-prod
